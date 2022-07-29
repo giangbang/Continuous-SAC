@@ -31,7 +31,7 @@ class SAC:
         self.actor  = Actor(obs_shape, action_shape, num_layers, 
                 hidden_dim, actor_log_std_min, actor_log_std_max).to(device)
                 
-        self.critic = Critic(obs_shape[0], action_shape[0], num_layers, hidden_dim).to(device)
+        self.critic = Critic(obs_shape, action_shape, num_layers, hidden_dim).to(device)
         
         self.target_entropy = -np.prod(action_shape)
         
@@ -43,7 +43,7 @@ class SAC:
             self.critic.parameters(), lr=critic_lr, betas=(critic_beta, 0.999)
         )
         
-        self.log_ent_coef = torch.log(1).requires_grad_(True)
+        self.log_ent_coef = torch.log(torch.ones(1, device=device)).requires_grad_(True)
         
         self.ent_coef_optimizer = torch.optim.Adam([self.log_ent_coef], 
             lr=alpha_lr, betas=(alpha_beta, 0.999)
@@ -76,13 +76,13 @@ class SAC:
             ent_coef    = torch.exp(self.log_ent_coef)
             next_q_val  = next_q_val - ent_coef * next_log_pi
             
-            target_q_val= batch.rewards + (1-self.dones)*self.discount*next_q_val
+            target_q_val= batch.rewards + (1-batch.dones)*self.discount*next_q_val
             
         current_q_vals  = self.critic.online_q(batch.states, batch.actions)
         critic_loss     = .5*sum(F.mse_loss(current_q, target_q_val) for current_q in current_q_vals)
         
         self.critic_optimizer.zero_grad()
-        self.critic_optimizer.backward()
+        critic_loss.backward()
         self.critic_optimizer.step()
         
         self.critic.polyak_update(self.critic_tau)
@@ -90,13 +90,13 @@ class SAC:
         return critic_loss.item()
         
     def _update_actor(self, batch):
-        pi, log_pi = self.actor.sample(batch.states)
+        pi, log_pi = self.actor.sample(batch.states, compute_log_pi=True)
         
         q_vals = self.critic.online_q(batch.states, pi)
         q_val  = torch.minimum(*q_vals)
         
         with torch.no_grad():
-            ent_coef = torch.exp(self)
+            ent_coef = torch.exp(self.log_ent_coef)
         
         actor_loss = (ent_coef * log_pi - q_val).mean()
         
@@ -108,7 +108,7 @@ class SAC:
     
     def _update_alpha(self, batch):
         with torch.no_grad():
-            pi, log_pi = self.actor.sample(batch.states)
+            pi, log_pi = self.actor.sample(batch.states, compute_log_pi=True)
         alpha_loss = -(self.log_ent_coef * (log_pi + self.target_entropy).detach()).mean()
         
         self.ent_coef_optimizer.zero_grad()

@@ -12,11 +12,13 @@ def evaluate(env, agent, n_rollout = 10):
         done = False
         agent.eval()
         while not done:
-            state = torch.from_numpy(np.array([state])).float()
-            action = agent.select_action(state)
+            state = torch.from_numpy(np.array(state, dtype=np.float32))
+            action = agent.select_action(state).reshape(-1)
             
             next_state, reward, done, _ = env.step(action)
             tot_rw += reward
+            state = next_state
+    agent.train()
     return tot_rw / n_rollout
             
 
@@ -44,7 +46,7 @@ if __name__ == '__main__':
     action_shape      = env.action_space.shape
     observation_shape = env.observation_space.shape
     
-    sac_agent = SAC(observation_shape, action_shape)
+    sac_agent = SAC(observation_shape[0], action_shape[0])
     buffer    = ReplayBuffer(observation_shape, action_shape, 
                 args.buffer_size, args.batch_size)
                 
@@ -53,11 +55,11 @@ if __name__ == '__main__':
     his = []
     
     state = env.reset()
-    for env_step in  range(args.total_env_step):
+    for env_step in  range(int(args.total_env_step)):
         if env_step < args.start_step: 
             action = env.action_space.sample()
         else :
-            state = torch.from_numpy(np.array([state],dtype=np.float32))
+            state = torch.from_numpy(np.array(state,dtype=np.float32))
             action = sac_agent.select_action(state).reshape(-1)
         
         next_state, reward, done, _ = env.step(action)
@@ -65,13 +67,14 @@ if __name__ == '__main__':
         
         sac_agent.update(buffer)
         
+        state = next_state
         env_step += 1
         if done: 
             state = env.reset()
-        if (step + 1) % args.eval_interval == 0:
+        if (env_step + 1) % args.eval_interval == 0:
             eval_return = evaluate(gym.make(args.env_name), sac_agent)
             his.append(eval_return)
-            print('mean reward after {} env step: {:.2f}'.format(step+1, eval_return))
+            print('mean reward after {} env step: {:.2f}'.format(env_step+1, eval_return))
             
     import matplotlib.pyplot as plt
     plt.plot(his)

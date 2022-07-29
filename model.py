@@ -9,13 +9,13 @@ class MLP(nn.Module):
     def __init__(self, inputs_dim, outputs_dim, n_layer, n_unit):
         super().__init__()
         self.inputs_dim     = inputs_dim
-        self.output_dims    = output_dims
+        self.outputs_dim    = outputs_dim
         
         net = [nn.Linear(inputs_dim, n_unit), nn.ReLU()]
         for _ in range(n_layer-2):
             net.append(nn.Linear(n_unit, n_unit))
             net.append(nn.ReLU())
-        net.append(nn.Linear(inputs_dim, n_unit))
+        net.append(nn.Linear(n_unit, outputs_dim))
         
         self.net = nn.Sequential(*net)
         
@@ -51,7 +51,7 @@ class Actor(nn.Module):
         ) * (log_std + 1)
         
         Gaussian_distribution = torch.distributions.normal.Normal(
-                                mu, log_std)
+                                mu, log_std.exp())
                                 
         sampled_action  = Gaussian_distribution.rsample()
         squashed_action = F.tanh(sampled_action)
@@ -59,6 +59,7 @@ class Actor(nn.Module):
         if not compute_log_pi: return squashed_action, None
         
         log_pi_normal   = Gaussian_distribution.log_prob(sampled_action)
+        log_pi_normal   = torch.sum(log_pi_normal, dim=-1, keepdim=True)
         
         # See appendix C from https://arxiv.org/pdf/1812.05905.pdf.
         log_squash      = log_pi_normal - torch.sum(
@@ -97,11 +98,11 @@ class DoubleQNet(nn.Module):
     
         
 class Critic(nn.Module):
-    def __init__(self, inputs_dim, n_layer, n_unit):
+    def __init__(self, obs_shape, action_shape, n_layer, n_unit):
         super().__init__()
         
-        self._online_q = DoubleQNet(inputs_dim, n_layer, n_unit)
-        self._target_q = DoubleQNet(inputs_dim, n_layer, n_unit, requires_grad=False)
+        self._online_q = DoubleQNet(obs_shape, action_shape, n_layer, n_unit)
+        self._target_q = DoubleQNet(obs_shape, action_shape, n_layer, n_unit, requires_grad=False)
         
         self._target_q.copy_weight(self._online_q)
         
