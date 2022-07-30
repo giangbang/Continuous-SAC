@@ -53,6 +53,7 @@ if __name__ == '__main__':
     print('Action dim: {} | Observation dim: {}'.format(observation_shape, action_shape))
     
     his = []
+    loss = []
     
     state = env.reset()
     for env_step in  range(int(args.total_env_step)):
@@ -65,7 +66,7 @@ if __name__ == '__main__':
         next_state, reward, done, _ = env.step(action)
         buffer.add(state, action, reward, next_state, done)
         
-        sac_agent.update(buffer)
+        loss.append(sac_agent.update(buffer))
         
         state = next_state
         env_step += 1
@@ -75,6 +76,9 @@ if __name__ == '__main__':
             eval_return = evaluate(gym.make(args.env_name), sac_agent)
             his.append(eval_return)
             print('mean reward after {} env step: {:.2f}'.format(env_step+1, eval_return))
+            print('critic loss: {:.2f} | actor loss: {:.2f} | alpha loss: {:.2f}'.format(
+                    *np.mean(list(*zip(*loss[-10:])), axis=-1)
+                    ))
             
     import matplotlib.pyplot as plt
     plt.plot(his)

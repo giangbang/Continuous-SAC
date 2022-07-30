@@ -120,9 +120,11 @@ class SAC:
     def update(self, buffer):
         batch = buffer.sample()
         
-        self._update_critic(batch)
-        self._update_actor(batch)
-        self._update_alpha(batch)
+        critic_loss = self._update_critic(batch)
+        actor_loss = self._update_actor(batch)
+        alpha_loss = self._update_alpha(batch)
+        
+        return critic_loss, actor_loss, alpha_loss
         
      
     def select_action(self, state):
