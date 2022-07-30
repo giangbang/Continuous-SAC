@@ -29,13 +29,13 @@ if __name__ == '__main__':
                         help='Environment name')
     parser.add_argument('--total_env_step', type=int, default=1e1,
                         help='Total number of env steps')
-    parser.add_argument('--buffer_size', type=int, default=3000,
+    parser.add_argument('--buffer_size', type=int, default=100000,
                         help='Max replay buffer size')
-    parser.add_argument('--eval_interval', type=int, default=1000,
+    parser.add_argument('--eval_interval', type=int, default=5000,
                         help='Log eval info every `eval_interval` env steps')
     parser.add_argument('--start_step', type=int, default=1000,
                         help='Random staring steps')
-    parser.add_argument('--batch_size', type=int, default=128,
+    parser.add_argument('--batch_size', type=int, default=256,
                         help='Training batch size (sampling from replay buffer)')
     
     args, unknown = parser.parse_known_args()
