@@ -42,7 +42,7 @@ class Actor(nn.Module):
     def sample(self, x, compute_log_pi=False):
         mu, log_std = self.forward(x)
         
-        if not self.training: return F.tanh(mu), None
+        if not self.training: return torch.tanh(mu), None
         
         # constrain log_std inside [log_std_min, log_std_max]
         log_std = torch.tanh(log_std)
@@ -54,7 +54,7 @@ class Actor(nn.Module):
                                 mu, log_std.exp())
                                 
         sampled_action  = Gaussian_distribution.rsample()
-        squashed_action = F.tanh(sampled_action)
+        squashed_action = torch.tanh(sampled_action)
         
         if not compute_log_pi: return squashed_action, None
         
@@ -63,7 +63,9 @@ class Actor(nn.Module):
         
         # See appendix C from https://arxiv.org/pdf/1812.05905.pdf.
         log_squash      = log_pi_normal - torch.sum(
-                            torch.log(1 - squashed_action ** 2),
+                            torch.log(
+                                F.relu(1 - squashed_action ** 2) + 1e-6
+                            ),
                             dim = -1, keepdim=True
                         )
         return squashed_action, log_squash
