@@ -77,7 +77,7 @@ if __name__ == '__main__':
             his.append(eval_return)
             print('mean reward after {} env step: {:.2f}'.format(env_step+1, eval_return))
             print('critic loss: {:.2f} | actor loss: {:.2f} | alpha loss: {:.2f}'.format(
-                    *np.mean(list(*zip(*loss[-10:])), axis=-1)
+                    *np.mean(list(zip(*loss[-10:])), axis=-1)
                     ))
             print('alpha: {:.2f}'.format(sac_agent.log_ent_coef.exp().item()))
             
