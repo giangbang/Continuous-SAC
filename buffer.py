@@ -3,7 +3,7 @@ import torch
 from collections import namedtuple
 
 
-Transition = namedtuple('Transitions',
+Transition = namedtuple('Transition',
                         ('states', 'actions', 'rewards', 'next_states', 'dones'))
 
 # https://github.com/denisyarats/pytorch_sac_ae/blob/master/utils.py

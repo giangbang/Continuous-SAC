@@ -14,15 +14,14 @@ class SAC:
         hidden_dim=50,
         discount=0.99,
         alpha_lr=3e-4,
-        alpha_beta=0.9,
         actor_lr=3e-4,
-        actor_beta=0.9,
         actor_log_std_min=-10,
         actor_log_std_max=2,
         critic_lr=3e-4,
-        critic_beta=0.9,
         critic_tau=0.005,
-        num_layers=3
+        num_layers=3,
+        init_temperature=1,
+        *args, **kwargs
     ):
         self.device = device
         self.discount = discount
@@ -36,17 +35,17 @@ class SAC:
         self.target_entropy = -np.prod(action_shape)
         
         self.actor_optimizer = torch.optim.Adam(
-            self.actor.parameters(), lr=actor_lr, betas=(actor_beta, 0.999)
+            self.actor.parameters(), lr=actor_lr, 
         )
         
         self.critic_optimizer = torch.optim.Adam(
-            self.critic.parameters(), lr=critic_lr, betas=(critic_beta, 0.999)
+            self.critic.parameters(), lr=critic_lr,
         )
         
-        self.log_ent_coef = torch.log(torch.ones(1, device=device)).requires_grad_(True)
+        self.log_ent_coef = torch.log(init_temperature*torch.ones(1, device=device)).requires_grad_(True)
         
         self.ent_coef_optimizer = torch.optim.Adam([self.log_ent_coef], 
-            lr=alpha_lr, betas=(alpha_beta, 0.999)
+            lr=alpha_lr,
         )
         
         self.train()
