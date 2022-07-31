@@ -59,11 +59,9 @@ class SAC:
         and critic
         '''
         self.actor.train()
-        self.critic.train()
         
     def eval(self):
         self.actor.eval()
-        self.critic.eval()
         
     def _update_critic(self, batch):
         # Compute target Q 

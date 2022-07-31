@@ -86,17 +86,7 @@ class DoubleQNet(nn.Module):
         assert x.shape[0] == a.shape[0]
         x = torch.cat([x, a], dim=1)
         return self.q1(x), self.q2(x)
-        
-    def copy_weight(self, other: nn.Module):
-        self.load_state_dict(other.state_dict())
     
-    def polyak_update(self, other: nn.Module, polyak=0.999):
-        '''
-        Polyak update the current weight of the networks with the other networks
-        current_net = current_net * polyak + (1-polyak) * other_net
-        '''
-        for current_net, other_net in zip(self.parameters(), other.parameters()):
-            current_net.data.copy_(polyak * current_net + (1-polyak) * other_net)
     
         
 class Critic(nn.Module):
@@ -106,14 +96,13 @@ class Critic(nn.Module):
         self._online_q = DoubleQNet(obs_shape, action_shape, n_layer, n_unit)
         self._target_q = DoubleQNet(obs_shape, action_shape, n_layer, n_unit, requires_grad=False)
         
-        self._target_q.copy_weight(self._online_q)
+        self._target_q.load_state_dict(self._online_q.state_dict())
         
     def target_q(self, x, a): return self._target_q(x, a)
     
     def online_q(self, x, a): return self._online_q(x, a)
     
     def polyak_update(self, tau):
-        self._target_q.polyak_update(self._online_q, 1-tau)
+        for target, online in zip(self._target_q.parameters(), self._online_q.parameters()):
+            target.data.copy_(target.data * (1-tau) + tau * online.data)
     
-    def parameters(self):
-        return self._online_q.parameters()
