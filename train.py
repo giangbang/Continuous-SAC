@@ -3,7 +3,7 @@ from sac import SAC
 import torch
 import numpy as np
 import gym
-from utils import parse_args
+from utils import parse_args, pprint, seed_everything
 
 def evaluate(env, agent, n_rollout = 10):   
     tot_rw = 0
@@ -24,6 +24,9 @@ def evaluate(env, agent, n_rollout = 10):
 
 if __name__ == '__main__':
     args = parse_args()
+    pprint(vars(args))
+    
+    if args.seed > 0: seed_everything(args.seed)
     
     env = gym.make(args.env_name)
     
@@ -53,7 +56,6 @@ if __name__ == '__main__':
         loss.append(sac_agent.update(buffer))
         
         state = next_state
-        env_step += 1
         if done: 
             state = env.reset()
         if (env_step + 1) % args.eval_interval == 0:

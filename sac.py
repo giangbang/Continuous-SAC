@@ -39,7 +39,7 @@ class SAC:
         )
         
         self.critic_optimizer = torch.optim.Adam(
-            self.critic.parameters(), lr=critic_lr,
+            self.critic._online_q.parameters(), lr=critic_lr,
         )
         
         self.log_ent_coef = torch.log(init_temperature*torch.ones(1, device=device)).requires_grad_(True)

@@ -29,7 +29,7 @@ def parse_args():
     parser.add_argument('--init_temperature', default=1, type=float)
     parser.add_argument('--alpha_lr', default=1e-4, type=float)
     # misc
-    parser.add_argument('--seed', default=1, type=int)
+    parser.add_argument('--seed', default=-1, type=int)
     parser.add_argument('--work_dir', default='.', type=str)
     parser.add_argument('--save_tb', default=False, action='store_true')
     parser.add_argument('--save_model', default=False, action='store_true')
@@ -52,3 +52,18 @@ def seed_everything(seed: int):
     torch.cuda.manual_seed(seed)
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = True
+    
+def pprint(dict_data):
+    hyper_param_space, value_space = 30, 40
+    format_str = "| {:<"+ f"{hyper_param_space}" + "} | {:<"+f"{value_space}"+"}|"
+    hbar = '-'*(hyper_param_space + value_space+6)
+    
+    print(hbar)
+    print(format_str.format('Hyperparams', 'Values'))
+    print(hbar)
+    
+    for k, v in dict_data.items():
+        # if isinstance(v, float): v = '{:.2f}'.format(v)
+        print(format_str.format(str(k), str(v)))
+        
+    print(hbar)
