@@ -1,3 +1,7 @@
+'''This file is not well-maintained and contains ugly code
+since it should not be copied to other projects
+'''
+
 from buffer import ReplayBuffer
 from sac import SAC
 import torch
@@ -68,6 +72,14 @@ if __name__ == '__main__':
             print('alpha: {:.2f}'.format(sac_agent.log_ent_coef.exp().item()))
             
     import matplotlib.pyplot as plt
-    plt.plot(his)
+    x, y = np.linspace(0, args.total_env_step, len(his)), his
+    plt.plot(x, y)
+    plt.title(args.env_name)
     plt.savefig('res.png')
+
+    import pandas as pd 
+    data_dict = {'rollout/ep_rew_mean': y, 'time/total_timesteps': x} # formated as stable baselines
+    df = pd.DataFrame(data_dict)
+
+    df.to_csv(index=False)
     

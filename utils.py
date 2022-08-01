@@ -55,6 +55,7 @@ def seed_everything(seed: int):
     torch.backends.cudnn.benchmark = True
     
 def pprint(dict_data):
+    '''Pretty print Hyper-parameters'''
     hyper_param_space, value_space = 30, 40
     format_str = "| {:<"+ f"{hyper_param_space}" + "} | {:<"+f"{value_space}"+"}|"
     hbar = '-'*(hyper_param_space + value_space+6)
