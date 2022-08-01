@@ -5,6 +5,7 @@ def parse_args():
     # environment
     parser.add_argument('--env_name', default='LunarLanderContinuous-v2')
     parser.add_argument('--frame_stack', default=3, type=int)
+    parser.add_argument('--reward_scale', default=5, type=float)
     # replay buffer
     parser.add_argument('--buffer_size', default=1000000, type=int)
     # train
@@ -17,7 +18,7 @@ def parse_args():
     parser.add_argument('--num_eval_episodes', default=10, type=int)
     # critic
     parser.add_argument('--critic_lr', default=1e-4, type=float)
-    parser.add_argument('--critic_tau', default=0.01, type=float)
+    parser.add_argument('--critic_tau', default=0.005, type=float)
     # actor
     parser.add_argument('--actor_lr', default=1e-4, type=float)
     parser.add_argument('--actor_log_std_min', default=-10, type=float)
@@ -63,7 +64,6 @@ def pprint(dict_data):
     print(hbar)
     
     for k, v in dict_data.items():
-        # if isinstance(v, float): v = '{:.2f}'.format(v)
         print(format_str.format(str(k), str(v)))
         
     print(hbar)

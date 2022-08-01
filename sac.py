@@ -21,11 +21,13 @@ class SAC:
         critic_tau=0.005,
         num_layers=3,
         init_temperature=1,
+        reward_scale=1.,
         *args, **kwargs
     ):
         self.device = device
         self.discount = discount
         self.critic_tau = critic_tau
+        self.reward_scale = reward_scale
         
         self.actor  = Actor(obs_shape, action_shape, num_layers, 
                 hidden_dim, actor_log_std_min, actor_log_std_max).to(device)
@@ -73,7 +75,7 @@ class SAC:
             ent_coef    = torch.exp(self.log_ent_coef)
             next_q_val  = next_q_val - ent_coef * next_log_pi
             
-            target_q_val= batch.rewards + (1-batch.dones)*self.discount*next_q_val
+            target_q_val= self.reward_scale*batch.rewards + (1-batch.dones)*self.discount*next_q_val
             
         current_q_vals  = self.critic.online_q(batch.states, batch.actions)
         critic_loss     = .5*sum(F.mse_loss(current_q, target_q_val) for current_q in current_q_vals)

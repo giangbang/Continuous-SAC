@@ -68,6 +68,8 @@ class Actor(nn.Module):
                             ),
                             dim = -1, keepdim=True
                         )
+        assert log_squash.shape == squashed_action.shape
+        assert log_squash.shape == log_pi_normal.shape
         return squashed_action, log_squash
 
 class DoubleQNet(nn.Module):
@@ -84,9 +86,9 @@ class DoubleQNet(nn.Module):
         
     def forward(self, x, a):
         assert x.shape[0] == a.shape[0]
+        assert len(x.shape) == 2 and len(a.shape) == 2
         x = torch.cat([x, a], dim=1)
         return self.q1(x), self.q2(x)
-    
     
         
 class Critic(nn.Module):
