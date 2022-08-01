@@ -27,7 +27,7 @@ def parse_args():
     parser.add_argument('--num_layers', default=4, type=int)
     # sac
     parser.add_argument('--discount', default=0.99, type=float)
-    parser.add_argument('--init_temperature', default=1, type=float)
+    parser.add_argument('--init_temperature', default=.5, type=float)
     parser.add_argument('--alpha_lr', default=1e-4, type=float)
     # misc
     parser.add_argument('--seed', default=-1, type=int)

@@ -24,7 +24,6 @@ def evaluate(env, agent, n_rollout = 10):
 
 if __name__ == '__main__':
     args = parse_args()
-    pprint(vars(args))
     
     if args.seed > 0: seed_everything(args.seed)
     
@@ -36,7 +35,8 @@ if __name__ == '__main__':
     sac_agent = SAC(observation_shape[0], action_shape[0], **vars(args))
     buffer    = ReplayBuffer(observation_shape, action_shape, 
                 args.buffer_size, args.batch_size)
-                
+    
+    pprint(vars(args))
     print('Action dim: {} | Observation dim: {}'.format(action_shape, observation_shape))
     
     his = []
