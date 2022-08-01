@@ -81,5 +81,5 @@ if __name__ == '__main__':
     data_dict = {'rollout/ep_rew_mean': y, 'time/total_timesteps': x} # formated as stable baselines
     df = pd.DataFrame(data_dict)
 
-    df.to_csv(index=False)
+    df.to_csv('sac_progress.csv', index=False)
     
