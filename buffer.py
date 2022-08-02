@@ -28,6 +28,7 @@ class ReplayBuffer(object):
         self.full = False
 
     def add(self, obs, action, reward, next_obs, done):
+        '''Add a new transition to replay buffer'''
         np.copyto(self.obses[self.idx], obs)
         np.copyto(self.actions[self.idx], action)
         np.copyto(self.rewards[self.idx], reward)
@@ -38,6 +39,8 @@ class ReplayBuffer(object):
         self.full = self.full or self.idx == 0
 
     def sample(self):
+        '''Sample batch of Transitions with batch_size elements.
+        Return a named tuple with 'states', 'actions', 'rewards', 'next_states' and 'dones'. '''
         idxs = np.random.randint(
             0, self.capacity if self.full else self.idx, size=self.batch_size
         )

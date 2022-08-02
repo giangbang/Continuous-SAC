@@ -4,7 +4,12 @@ import torch.nn.functional as F
 
 class MLP(nn.Module):
     '''
-    Multi-layer perceptron
+    Multi-layer perceptron.
+
+    :param inputs_dim: 1D Input dimension of the input data
+    :param outputs_dim: output dimension
+    :param n_layer: total number of layer in MLP, minimum is two
+    :param n_unit: dimensions of hidden layers 
     '''
     def __init__(self, inputs_dim, outputs_dim, n_layer, n_unit):
         super().__init__()
@@ -40,6 +45,15 @@ class Actor(nn.Module):
         return self._actor(x).chunk(2, dim=-1)
         
     def sample(self, x, compute_log_pi=False):
+        '''
+        Sample action from policy, return sampled actions and log prob of that action
+        In inference time, set the sampled actions to be deterministic by setting
+        `self.eval()`, which will return the mean of the learned Squashed distribution.
+
+        :param x: observation with type `torch.Tensor`
+        :param compute_log_pi: return the log prob of action taken
+
+        '''
         mu, log_std = self.forward(x)
         
         if not self.training: return torch.tanh(mu), None
@@ -102,6 +116,7 @@ class Critic(nn.Module):
     def online_q(self, x, a): return self._online_q(x, a)
     
     def polyak_update(self, tau):
+        '''Exponential evaraging of the online q network'''
         for target, online in zip(self._target_q.parameters(), self._online_q.parameters()):
             target.data.copy_(target.data * (1-tau) + tau * online.data)
     
