@@ -45,10 +45,7 @@ class Actor(nn.Module):
         if not self.training: return torch.tanh(mu), None
         
         # constrain log_std inside [log_std_min, log_std_max]
-        log_std = torch.tanh(log_std)
-        log_std = self.log_std_min + 0.5 * (
-            self.log_std_max - self.log_std_min
-        ) * (log_std + 1)
+        log_std = torch.clamp(log_std, min=self.log_std_min, max=self.log_std_max)
         
         Gaussian_distribution = torch.distributions.normal.Normal(
                                 mu, log_std.exp())
