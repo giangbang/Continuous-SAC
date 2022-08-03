@@ -54,8 +54,8 @@ if __name__ == '__main__':
             state = torch.from_numpy(np.array(state,dtype=np.float32))
             action = sac_agent.select_action(state).reshape(-1)
         
-        next_state, reward, done, _ = env.step(action)
-        buffer.add(state, action, reward, next_state, done)
+        next_state, reward, done, info = env.step(action)
+        buffer.add(state, action, reward, next_state, done, info)
         
         loss.append(sac_agent.update(buffer))
         
