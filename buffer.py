@@ -27,7 +27,7 @@ class ReplayBuffer(object):
         self.last_save = 0
         self.full = False
 
-    def add(self, obs, action, reward, next_obs, done, info: Dict[str, Any]=None):
+    def add(self, obs, action, reward, next_obs, done, info=None):
         '''Add a new transition to replay buffer'''
         np.copyto(self.obses[self.idx], obs)
         np.copyto(self.actions[self.idx], action)
