@@ -19,6 +19,7 @@ class SAC:
         actor_log_std_max=2,
         critic_lr=3e-4,
         critic_tau=0.005,
+        gradient_steps=1,
         num_layers=3,
         init_temperature=1,
         reward_scale=1.,
@@ -28,6 +29,7 @@ class SAC:
         self.discount = discount
         self.critic_tau = critic_tau
         self.reward_scale = reward_scale
+        self.gradient_steps = gradient_steps
         
         self.actor  = Actor(obs_shape, action_shape, num_layers, 
                 hidden_dim, actor_log_std_min, actor_log_std_max).to(device)
@@ -117,13 +119,20 @@ class SAC:
         return alpha_loss.item()
         
     def update(self, buffer):
-        batch = buffer.sample()
+        actor_losses, critic_losses, alpha_losses = [], [], []
         
-        critic_loss = self._update_critic(batch)
-        actor_loss = self._update_actor(batch)
-        alpha_loss = self._update_alpha(batch)
+        for _ in range(self.gradient_steps):
+            batch = buffer.sample()
+            
+            critic_loss = self._update_critic(batch)
+            actor_loss = self._update_actor(batch)
+            alpha_loss = self._update_alpha(batch)
+            
+            critic_losses.append(critic_loss)
+            actor_losses.append(actor_loss)
+            alpha_losses.append(alpha_loss)
         
-        return critic_loss, actor_loss, alpha_loss
+        return np.mean(critic_losses), np.mean(actor_losses), np.mean(alpha_losses)
         
      
     def select_action(self, state):

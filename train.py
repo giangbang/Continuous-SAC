@@ -57,7 +57,8 @@ if __name__ == '__main__':
         next_state, reward, done, info = env.step(action)
         buffer.add(state, action, reward, next_state, done, info)
         
-        loss.append(sac_agent.update(buffer))
+        if (env_step + 1) % args.train_freq == 0:
+            loss.append(sac_agent.update(buffer))
         
         state = next_state
         if done: 
