@@ -74,8 +74,7 @@ class Actor(nn.Module):
         
         # See appendix C from https://arxiv.org/pdf/1812.05905.pdf.
         log_squash      = log_pi_normal - torch.sum(
-                            torch.log(
-                                F.relu(1 - squashed_action ** 2) + 1e-6
+                            torch.log(1 - squashed_action ** 2 + 1e-6
                             ),
                             dim = -1, keepdim=True
                         )
