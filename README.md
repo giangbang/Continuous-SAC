@@ -29,3 +29,10 @@ Most of the experiments used the same hyper-parameters shown in the table. Set `
 
 
 ![avatar](https://github.com/giangbang/Continuous-SAC/blob/master/results/sac.png)  
+## Comments
+Here are some critical minor implementation details but are crucial to achieve the desired performance
+- Handle done separately by truncation and termination. SAC performs much worse in some environment when we do not correctly implement this (about 2k rewards in difference in `Half-Cheetah`).
+- Using ReLU activation function slightly increases the performance, compared to using Tanh. I suspect that the three layer Tanh Activation network are not powerful enough to learn the value function of tasks with high reward range like Mujoco.
+- Using `eps=1e-5` in Adam Optimizer does not provide any significant boost as suggested in `stable-baselines3`.
+- Initial temperature of `alpha` (entropy coefficient) can largely impact the final performance (than one might expect). In `Half-Cheetah`, `alpha` starting with the values of 0.2 and 1 can yield a gap ~ 1-2k in final performance.
+- Changing `actor_log_std_min` from -20 to -10 can sometimes reduce the performance, but this might not be consistent through out seeds
