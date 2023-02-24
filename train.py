@@ -27,7 +27,7 @@ def evaluate(env, agent, n_rollout = 10):
     return tot_rw / n_rollout
             
 
-if __name__ == '__main__':
+def main():
     args = parse_args()
     
     if args.seed > 0: seed_everything(args.seed)
@@ -86,3 +86,6 @@ if __name__ == '__main__':
 
     df.to_csv('sac_progress.csv', index=False)
     
+
+if __name__ == '__main__':
+    main()
