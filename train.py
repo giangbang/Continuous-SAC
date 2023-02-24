@@ -6,7 +6,7 @@ from buffer import ReplayBuffer
 from sac import SAC
 import torch
 import numpy as np
-import gym
+import gymnasium as gym
 from utils import parse_args, pprint, seed_everything
 
 def evaluate(env, agent, n_rollout = 10):   
@@ -19,9 +19,10 @@ def evaluate(env, agent, n_rollout = 10):
             state = torch.from_numpy(np.array(state, dtype=np.float32))
             action = agent.select_action(state).reshape(-1)
             
-            next_state, reward, done, _ = env.step(action)
+            next_state, reward, terminated, truncated, _ = env.step(action)
             tot_rw += reward
             state = next_state
+            done = terminated or truncated
     agent.train()
     return tot_rw / n_rollout
             
@@ -54,13 +55,14 @@ if __name__ == '__main__':
             state = torch.from_numpy(np.array(state,dtype=np.float32))
             action = sac_agent.select_action(state).reshape(-1)
         
-        next_state, reward, done, info = env.step(action)
-        buffer.add(state, action, reward, next_state, done, info)
+        next_state, reward, terminated, truncated, info = env.step(action)
+        buffer.add(state, action, reward, next_state, terminated, truncated, info)
         
         if (env_step + 1) % args.train_freq == 0:
             loss.append(sac_agent.update(buffer))
         
         state = next_state
+        done = terminated or truncated
         if done: 
             state = env.reset()
         if (env_step + 1) % args.eval_interval == 0:
@@ -71,7 +73,7 @@ if __name__ == '__main__':
                     *np.mean(list(zip(*loss[-10:])), axis=-1)
                     ))
             print('alpha: {:.2f}'.format(sac_agent.log_ent_coef.exp().item()))
-            
+
     import matplotlib.pyplot as plt
     x, y = np.linspace(0, args.total_env_step, len(his)), his
     plt.plot(x, y)
