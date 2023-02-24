@@ -12,7 +12,7 @@ from utils import parse_args, pprint, seed_everything
 def evaluate(env, agent, n_rollout = 10):   
     tot_rw = 0
     for _ in range(n_rollout):
-        state = env.reset()
+        state, _ = env.reset()
         done = False
         agent.eval()
         while not done:
@@ -33,6 +33,7 @@ def main():
     if args.seed > 0: seed_everything(args.seed)
     
     env = gym.make(args.env_name)
+    assert isinstance(env.action_space, gym.spaces.Box), "Only support continuous env"
     
     action_shape      = env.action_space.shape
     observation_shape = env.observation_space.shape
@@ -47,7 +48,7 @@ def main():
     his = []
     loss = []
     
-    state = env.reset()
+    state, _ = env.reset()
     for env_step in  range(int(args.total_env_step)):
         if env_step < args.start_step: 
             action = env.action_space.sample()
@@ -64,15 +65,15 @@ def main():
         state = next_state
         done = terminated or truncated
         if done: 
-            state = env.reset()
+            state, _ = env.reset()
         if (env_step + 1) % args.eval_interval == 0:
             eval_return = evaluate(gym.make(args.env_name), sac_agent, args.num_eval_episodes)
             his.append(eval_return)
             print('mean reward after {} env step: {:.2f}'.format(env_step+1, eval_return))
-            print('critic loss: {:.2f} | actor loss: {:.2f} | alpha loss: {:.2f}'.format(
-                    *np.mean(list(zip(*loss[-10:])), axis=-1)
-                    ))
-            print('alpha: {:.2f}'.format(sac_agent.log_ent_coef.exp().item()))
+            print('critic loss: {:.2f} | actor loss: {:.2f} | alpha loss: {:.2f} | alpha: {:.2f}'.format(
+                *np.mean(list(zip(*loss[-10:])), axis=-1),
+                sac_agent.log_ent_coef.exp().item()
+            ))
 
     import matplotlib.pyplot as plt
     x, y = np.linspace(0, args.total_env_step, len(his)), his

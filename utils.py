@@ -4,7 +4,7 @@ def parse_args():
     parser = argparse.ArgumentParser(description='Training SAC continuous')
     # environment
     parser.add_argument('--env_name', default='LunarLanderContinuous-v2')
-    parser.add_argument('--frame_stack', default=3, type=int)
+    # parser.add_argument('--frame_stack', default=3, type=int)
     parser.add_argument('--reward_scale', default=1, type=float)
     # replay buffer
     parser.add_argument('--buffer_size', default=1000000, type=int)
@@ -33,11 +33,11 @@ def parse_args():
     parser.add_argument('--alpha_lr', default=3e-4, type=float)
     # misc
     parser.add_argument('--seed', default=-1, type=int)
-    parser.add_argument('--work_dir', default='.', type=str)
-    parser.add_argument('--save_tb', default=False, action='store_true')
-    parser.add_argument('--save_model', default=False, action='store_true')
-    parser.add_argument('--save_buffer', default=False, action='store_true')
-    parser.add_argument('--save_video', default=False, action='store_true')
+    # parser.add_argument('--work_dir', default='.', type=str)
+    # parser.add_argument('--save_tb', default=False, action='store_true')
+    # parser.add_argument('--save_model', default=False, action='store_true')
+    # parser.add_argument('--save_buffer', default=False, action='store_true')
+    # parser.add_argument('--save_video', default=False, action='store_true')
 
     args, unknown = parser.parse_known_args()
     return args
