@@ -29,6 +29,8 @@ def evaluate(env, agent, n_rollout = 10):
 
 def main():
     args = parse_args()
+    logger = Logger()
+    logger.add_run_command()
     
     if args.seed > 0: seed_everything(args.seed)
     
@@ -47,6 +49,8 @@ def main():
     
     his = []
     loss = []
+
+    train_returns = 0
     
     state, _ = env.reset()
     for env_step in  range(int(args.total_env_step)):
@@ -58,6 +62,7 @@ def main():
         
         next_state, reward, terminated, truncated, info = env.step(action)
         buffer.add(state, action, reward, next_state, terminated, truncated, info)
+        train_returns += reward
         
         if (env_step + 1) % args.train_freq == 0:
             loss.append(sac_agent.update(buffer))
@@ -66,6 +71,8 @@ def main():
         done = terminated or truncated
         if done: 
             state, _ = env.reset()
+            logger.add_scalar("train/returns", train_returns, env_step)
+            train_returns = 0
         if (env_step + 1) % args.eval_interval == 0:
             eval_return = evaluate(gym.make(args.env_name), sac_agent, args.num_eval_episodes)
             his.append(eval_return)
@@ -74,6 +81,9 @@ def main():
                 *np.mean(list(zip(*loss[-10:])), axis=-1),
                 sac_agent.log_ent_coef.exp().item()
             ))
+            logger.add_scalar("eval/returns", eval_return, env_step)
+
+    logger.close()
 
     import matplotlib.pyplot as plt
     x, y = np.linspace(0, args.total_env_step, len(his)), his
@@ -85,7 +95,7 @@ def main():
     data_dict = {'rollout/ep_rew_mean': y, 'time/total_timesteps': x} # formated as stable baselines
     df = pd.DataFrame(data_dict)
 
-    df.to_csv('sac_progress.csv', index=False)
+    df.to_csv('sac_continuous_progress.csv', index=False)
     
 
 if __name__ == '__main__':
