@@ -33,20 +33,24 @@ def main():
     logger.add_run_command()
     
     if args.seed > 0: seed_everything(args.seed)
-    
+
+    # creating the training and testing environments here, 
+    # all the wrapping and preprocessing should be placed here.
     env = gym.make(args.env_name)
+    test_env = gym.make(args.env_name)
+
     assert isinstance(env.action_space, gym.spaces.Box), "Only support continuous env"
-    
+
     action_shape      = env.action_space.shape
     observation_shape = env.observation_space.shape
-    
+
     sac_agent = SAC(observation_shape[0], action_shape[0], **vars(args))
     buffer    = ReplayBuffer(observation_shape, action_shape, 
                 args.buffer_size, args.batch_size)
-    
+
     pprint(vars(args))
     print('Action dim: {} | Observation dim: {}'.format(action_shape, observation_shape))
-    
+
     his = []
     loss = []
 
@@ -74,7 +78,7 @@ def main():
             logger.add_scalar("train/returns", train_returns, env_step)
             train_returns = 0
         if (env_step + 1) % args.eval_interval == 0:
-            eval_return = evaluate(gym.make(args.env_name), sac_agent, args.num_eval_episodes)
+            eval_return = evaluate(test_env, sac_agent, args.num_eval_episodes)
             his.append(eval_return)
             print('mean reward after {} env step: {:.2f}'.format(env_step+1, eval_return))
             print('critic loss: {:.2f} | actor loss: {:.2f} | alpha loss: {:.2f} | alpha: {:.2f}'.format(
@@ -82,6 +86,8 @@ def main():
                 sac_agent.log_ent_coef.exp().item()
             ))
             logger.add_scalar("eval/returns", eval_return, env_step)
+        if (env_step + 1) % 5000 == 0:
+            logger.log_stdout()
 
     logger.close()
 

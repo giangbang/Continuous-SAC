@@ -36,6 +36,7 @@ class Logger:
         self.writer.close()
 
     def log_stdout(self):
+        if len(self) < 10: return
         results = {}
         for name, vals in self.name_to_values.items():
             results[name] = np.mean(vals)
@@ -46,6 +47,9 @@ class Logger:
         if key not in self.name_to_values:
             self.name_to_values[key] = self._default_values()
         return self.name_to_values.get(key)
+
+    def __len__(self):
+        return len(name_to_step.values[0])
 
     def __setitem__(self, key, val):
         self[key].extend([val])

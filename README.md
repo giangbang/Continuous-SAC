@@ -20,6 +20,10 @@ python train.py --env_name HalfCheetah-v4 --total_env_step 1000000 --buffer_size
 ```
 Some benchmark environments from `gym`, for example `mujoco` or `RacingCar` and `LunarLanderContinuous`, need to be installed separately from by `pip install gymnasium[mujoco]` or `pip install gymnasium[box2d]`.
 
+It can also be run from terminal by the following command from the entry point, if installed by `setup.py`
+```
+sac_continuous --env_name HalfCheetah-v4 --total_env_step 1_000_000
+```
 
 ## Results
 

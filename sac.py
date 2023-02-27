@@ -27,6 +27,7 @@ class SAC:
     ):
         if device == 'auto':
             self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+            device = self.device
         else:
             self.device = device
         self.discount = discount
