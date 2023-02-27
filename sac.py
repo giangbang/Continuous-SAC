@@ -114,7 +114,9 @@ class SAC:
     def _update_alpha(self, batch):
         with torch.no_grad():
             pi, log_pi = self.actor.sample(batch.states, compute_log_pi=True)
-        alpha_loss = -(self.log_ent_coef * (log_pi + self.target_entropy).detach()).mean()
+            log_pi = log_pi.mean()
+        alpha_loss = -(self.log_ent_coef * (log_pi + self.target_entropy).detach())
+        self.entropy = -log_pi
 
         self.ent_coef_optimizer.zero_grad()
         alpha_loss.backward()
