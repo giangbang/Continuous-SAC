@@ -7,10 +7,11 @@ import numpy as np
 
 # https://github.com/denisyarats/pytorch_sac_ae/blob/master/sac_ae.py
 class SAC:
-    def __init__(self,
+    def __init__(
+        self,
         obs_shape: np.ndarray,
         action_shape: np.ndarray,
-        device='auto',
+        device="auto",
         hidden_dim=50,
         discount=0.99,
         alpha_lr=3e-4,
@@ -22,11 +23,12 @@ class SAC:
         gradient_steps=1,
         num_layers=3,
         init_temperature=1,
-        reward_scale=1.,
-        *args, **kwargs
+        reward_scale=1.0,
+        *args,
+        **kwargs
     ):
-        if device == 'auto':
-            self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        if device == "auto":
+            self.device = "cuda" if torch.cuda.is_available() else "cpu"
             device = self.device
         else:
             self.device = device
@@ -35,37 +37,47 @@ class SAC:
         self.reward_scale = reward_scale
         self.gradient_steps = gradient_steps
 
-        self.actor  = Actor(obs_shape, action_shape, num_layers,
-                hidden_dim, actor_log_std_min, actor_log_std_max).to(device)
+        self.actor = Actor(
+            obs_shape,
+            action_shape,
+            num_layers,
+            hidden_dim,
+            actor_log_std_min,
+            actor_log_std_max,
+        ).to(device)
 
         self.critic = Critic(obs_shape, action_shape, num_layers, hidden_dim).to(device)
 
         self.target_entropy = -np.prod(action_shape)
 
         self.actor_optimizer = torch.optim.Adam(
-            self.actor.parameters(), lr=actor_lr,
+            self.actor.parameters(),
+            lr=actor_lr,
         )
 
         self.critic_optimizer = torch.optim.Adam(
-            self.critic._online_q.parameters(), lr=critic_lr,
+            self.critic._online_q.parameters(),
+            lr=critic_lr,
         )
 
-        self.log_ent_coef = torch.log(init_temperature*torch.ones(1, device=device)).requires_grad_(True)
+        self.log_ent_coef = torch.log(
+            init_temperature * torch.ones(1, device=device)
+        ).requires_grad_(True)
 
-        self.ent_coef_optimizer = torch.optim.Adam([self.log_ent_coef],
+        self.ent_coef_optimizer = torch.optim.Adam(
+            [self.log_ent_coef],
             lr=alpha_lr,
         )
 
         self.train()
 
-
     def train(self):
-        '''
+        """
         Set training mode for actor and critic
         The behavior of actor will be changed between train and eval modes
         Note: this function does not cause any update in the weights of actor
         and critic
-        '''
+        """
         self.actor.train()
 
     def eval(self):
@@ -74,17 +86,24 @@ class SAC:
     def _update_critic(self, batch):
         # Compute target Q
         with torch.no_grad():
-            next_pi, next_log_pi  = self.actor.sample(batch.next_states, compute_log_pi=True)
+            next_pi, next_log_pi = self.actor.sample(
+                batch.next_states, compute_log_pi=True
+            )
             next_q_vals = self.critic.target_q(batch.next_states, next_pi)
-            next_q_val  = torch.minimum(*next_q_vals)
+            next_q_val = torch.minimum(*next_q_vals)
 
-            ent_coef    = torch.exp(self.log_ent_coef)
-            next_q_val  = next_q_val - ent_coef * next_log_pi
+            ent_coef = torch.exp(self.log_ent_coef)
+            next_q_val = next_q_val - ent_coef * next_log_pi
 
-            target_q_val= self.reward_scale*batch.rewards + (1-batch.dones)*self.discount*next_q_val
+            target_q_val = (
+                self.reward_scale * batch.rewards
+                + (1 - batch.dones) * self.discount * next_q_val
+            )
 
-        current_q_vals  = self.critic.online_q(batch.states, batch.actions)
-        critic_loss     = .5*sum(F.mse_loss(current_q, target_q_val) for current_q in current_q_vals)
+        current_q_vals = self.critic.online_q(batch.states, batch.actions)
+        critic_loss = 0.5 * sum(
+            F.mse_loss(current_q, target_q_val) for current_q in current_q_vals
+        )
 
         self.critic_optimizer.zero_grad()
         critic_loss.backward()
@@ -98,7 +117,7 @@ class SAC:
         pi, log_pi = self.actor.sample(batch.states, compute_log_pi=True)
 
         q_vals = self.critic.online_q(batch.states, pi)
-        q_val  = torch.minimum(*q_vals)
+        q_val = torch.minimum(*q_vals)
 
         with torch.no_grad():
             ent_coef = torch.exp(self.log_ent_coef)
@@ -124,11 +143,11 @@ class SAC:
 
         return alpha_loss.item()
 
-    def update(self, buffer):
+    def update(self, get_batch):
         actor_losses, critic_losses, alpha_losses = [], [], []
 
         for _ in range(self.gradient_steps):
-            batch = buffer.sample()
+            batch = get_batch()
 
             critic_loss = self._update_critic(batch)
             actor_loss = self._update_actor(batch)
@@ -139,7 +158,6 @@ class SAC:
             alpha_losses.append(alpha_loss)
 
         return np.mean(critic_losses), np.mean(actor_losses), np.mean(alpha_losses)
-
 
     def select_action(self, state):
         with torch.no_grad():
