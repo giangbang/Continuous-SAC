@@ -4,7 +4,7 @@ import argparse
 def parse_args():
     parser = argparse.ArgumentParser(description="Training SAC continuous")
     # environment
-    parser.add_argument("--env_name", default="LunarLanderContinuous-v2")
+    parser.add_argument("--env_name", default="LunarLanderContinuous-v3")
     # parser.add_argument('--frame_stack', default=3, type=int)
     parser.add_argument("--reward_scale", default=1, type=float)
     # replay buffer

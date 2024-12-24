@@ -8,6 +8,7 @@ import torch
 import numpy as np
 import gymnasium as gym
 from utils import parse_args, pprint, seed_everything
+from logger import Logger
 
 
 def evaluate(env, agent, n_rollout=10):
@@ -82,9 +83,10 @@ def main():
         buffer.add(state, action, reward, next_state, terminated, truncated, info)
         train_returns += reward
 
-        while num_network_update * args.udp <= env_step + 1:
-            loss.append(sac_agent.update(get_batch=get_batch))
-            num_network_update += 1
+        if env_step > args.batch_size:
+            while num_network_update * args.upd <= env_step + 1:
+                loss.append(sac_agent.update(get_batch=get_batch))
+                num_network_update += 1
 
         state = next_state
         done = terminated or truncated
@@ -109,7 +111,7 @@ def main():
             logger.add_scalar("eval/returns", eval_return, env_step)
         if (env_step + 1) % 5000 == 0:
             logger.log_stdout()
-        if (env_step + 1) % 100 == 0:
+        if (env_step + 1) % 100 == 0 and env_step > args.batch_size:
             logger.add_scalar("train/entropy", sac_agent.entropy, env_step)
             logger.add_scalar("train/fps", logger.fps(), env_step)
 

@@ -61,14 +61,15 @@ class ReplayBuffer(object):
 
         return Transition(obses, actions, rewards, next_obses, dones)
 
-    def sample_without_replace(self):
+    def get_sample_without_replace_iter(self):
         """
         Sample without replacement a batch of Transitions with batch_size elements.
         Return a named tuple with 'states', 'actions', 'rewards', 'next_states' and 'dones'.
         """
         while True:
             current_len = self.capacity if self.full else self.idx
-            _indx = np.random.shuffle(np.arange(current_len))
+            _indx = np.arange(current_len)
+            np.random.shuffle(_indx)
             for batch_start_indx in range(0, current_len, self.batch_size):
                 idxs = _indx[
                     batch_start_indx : min(
@@ -85,3 +86,8 @@ class ReplayBuffer(object):
                 dones = torch.as_tensor(self.dones[idxs], device=self.device)
 
                 yield Transition(obses, actions, rewards, next_obses, dones)
+
+    def sample_without_replace(self):
+        if getattr(self, "_sample_wo_replace", None) is None:
+            self._sample_wo_replace = self.get_sample_without_replace_iter()
+        return next(self._sample_wo_replace)
