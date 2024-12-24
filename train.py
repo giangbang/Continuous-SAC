@@ -84,7 +84,7 @@ def main():
         train_returns += reward
 
         if env_step > args.batch_size:
-            while num_network_update * args.upd <= env_step + 1:
+            while num_network_update / args.upd <= env_step + 1:
                 loss.append(sac_agent.update(get_batch=get_batch))
                 num_network_update += 1
 
@@ -111,9 +111,10 @@ def main():
             logger.add_scalar("eval/returns", eval_return, env_step)
         if (env_step + 1) % 5000 == 0:
             logger.log_stdout()
-        if (env_step + 1) % 100 == 0 and env_step > args.batch_size:
+        if (env_step + 1) % 100 == 0 and hasattr(sac_agent, "entropy"):
             logger.add_scalar("train/entropy", sac_agent.entropy, env_step)
             logger.add_scalar("train/fps", logger.fps(), env_step)
+            logger.add_scalar("train/num_update", num_network_update, env_step)
 
     logger.close()
 

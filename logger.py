@@ -59,7 +59,7 @@ class Logger:
         results = {}
         for name, vals in self.name_to_values.items():
             results[name] = np.mean(vals)
-        results["step"] = current_env_step
+        results["step"] = self.current_env_step
         pprint(results)
 
     def __getitem__(self, key):
