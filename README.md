@@ -7,7 +7,7 @@ This repo is based on several SAC implementations, mainly [Stable-Baselines3](ht
 ## Installation
 After cloning the repo, install requirements by running
 ```
-pip install -r requirements.txt
+pip install -e .
 ```
 or it can be installed with `pip`
 ```
@@ -16,7 +16,7 @@ pip install git+https://github.com/giangbang/Continuous-SAC.git
 
 ## How to run
 ```
-python train.py --env_name HalfCheetah-v4 --total_env_step 1000000 --buffer_size 1000000 --actor_log_std_min -20 --batch_size 256 --eval_interval 5000 --critic_tau 0.005 --alpha_lr 3e-4 --num_layers 3 --critic_lr 3e-4 --actor_lr 3e-4 --init_temperature 1 --hidden_dim 256 --reward_scale .2 --train_freq 1 --gradient_steps 1
+python src/train.py --env_name HalfCheetah-v4 --total_env_step 1000000 --buffer_size 1000000 --actor_log_std_min -20 --batch_size 256 --eval_interval 5000 --critic_tau 0.005 --alpha_lr 3e-4 --num_layers 3 --critic_lr 3e-4 --actor_lr 3e-4 --init_temperature 1 --hidden_dim 256 --reward_scale .2 --train_freq 1 --gradient_steps 1
 ```
 Some benchmark environments from `gym`, for example `mujoco` or `RacingCar` and `LunarLanderContinuous`, need to be installed separately from by `pip install gymnasium[mujoco]` or `pip install gymnasium[box2d]`.
 

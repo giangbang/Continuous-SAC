@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from model import Actor, Critic
+from .model import Actor, Critic
 import torch.nn.functional as F
 import numpy as np
 

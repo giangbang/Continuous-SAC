@@ -2,13 +2,13 @@
 since it should not be copied to other projects
 """
 
-from buffer import ReplayBuffer
-from sac import SAC
+from .buffer import ReplayBuffer
+from .sac import SAC
 import torch
 import numpy as np
 import gymnasium as gym
-from utils import parse_args, pprint, seed_everything
-from logger import Logger
+from .utils import parse_args, pprint, seed_everything
+from .logger import Logger
 
 
 def evaluate(env, agent, n_rollout=10):
