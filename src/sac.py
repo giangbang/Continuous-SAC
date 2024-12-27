@@ -35,6 +35,8 @@ class SAC:
         self.critic_tau = critic_tau
         self.reward_scale = reward_scale
 
+        use_rbn = getattr(self, "use_rebatchnorm", False)
+
         self.actor = Actor(
             obs_shape,
             action_shape,
@@ -42,9 +44,16 @@ class SAC:
             hidden_dim,
             actor_log_std_min,
             actor_log_std_max,
+            use_rebatchnorm=use_rbn,
         ).to(device)
 
-        self.critic = Critic(obs_shape, action_shape, num_layers, hidden_dim).to(device)
+        self.critic = Critic(
+            obs_shape,
+            action_shape,
+            num_layers,
+            hidden_dim,
+            use_rebatchnorm=use_rbn,
+        ).to(device)
 
         self.target_entropy = -np.prod(action_shape)
 

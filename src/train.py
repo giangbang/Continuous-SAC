@@ -3,11 +3,10 @@ since it should not be copied to other projects
 """
 
 from .buffer import ReplayBuffer
-from .sac import SAC
 import torch
 import numpy as np
 import gymnasium as gym
-from .utils import parse_args, pprint, seed_everything
+from .utils import parse_args, pprint, seed_everything, get_agent_cls
 from .logger import Logger
 
 
@@ -47,7 +46,8 @@ def main():
     action_shape = env.action_space.shape
     observation_shape = env.observation_space.shape
 
-    sac_agent = SAC(observation_shape[0], action_shape[0], **vars(args))
+    agent_cls = get_agent_cls(args.algo)
+    sac_agent = agent_cls(observation_shape[0], action_shape[0], **vars(args))
     buffer = ReplayBuffer(
         observation_shape, action_shape, args.buffer_size, args.batch_size
     )

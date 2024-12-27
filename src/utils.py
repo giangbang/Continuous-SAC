@@ -10,6 +10,7 @@ def parse_args():
     # replay buffer
     parser.add_argument("--buffer_size", default=1000000, type=int)
     # train
+    parser.add_argument("--algo", default="sac", type=str)
     parser.add_argument("--start_step", default=1000, type=int)
     parser.add_argument("--total_env_step", default=1000000, type=int)
     parser.add_argument("--batch_size", default=256, type=int)
@@ -78,3 +79,13 @@ def pprint(dict_data):
         print(format_str.format(str(k), str(v)))
 
     print(hbar)
+
+
+def get_agent_cls(algo):
+    if algo == "sac":
+        from .sac import SAC as agent
+    elif algo == "crossq":
+        from .crossq import CrossQ as agent
+    else:
+        raise NotImplementedError()
+    return agent
