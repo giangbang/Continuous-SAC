@@ -70,7 +70,7 @@ class Actor(nn.Module):
     def forward(self, x):
         return self._actor(x).chunk(2, dim=-1)
 
-    def sample(self, x, compute_log_pi=False, deterministic=True):
+    def sample(self, x, compute_log_pi=False, deterministic=False):
         """
         Sample action from policy, return sampled actions and log prob of that action
         In inference time, set the sampled actions to be deterministic by setting
