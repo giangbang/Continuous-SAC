@@ -19,16 +19,23 @@ class MLP(nn.Module):
         outputs_dim,
         n_layer,
         n_unit,
-        use_rebatchnorm=False,
+        use_batchrenorm=False,
     ):
         super().__init__()
         self.inputs_dim = inputs_dim
         self.outputs_dim = outputs_dim
 
         net = [nn.Linear(inputs_dim, n_unit), nn.ReLU()]
+        if use_batchrenorm:
+            from renorm import BatchRenormalization
+
+            net.append(BatchRenormalization(n_unit))
+
         for _ in range(n_layer - 2):
             net.append(nn.Linear(n_unit, n_unit))
             net.append(nn.ReLU())
+            if use_batchrenorm:
+                net.append(BatchRenormalization(n_unit))
         net.append(nn.Linear(n_unit, outputs_dim))
 
         self.net = nn.Sequential(*net)
@@ -50,7 +57,7 @@ class Actor(nn.Module):
         n_unit,
         log_std_min,
         log_std_max,
-        use_rebatchnorm=False,
+        use_batchrenorm=False,
     ):
         super().__init__()
         self.inputs_dim = inputs_dim
@@ -58,12 +65,12 @@ class Actor(nn.Module):
         self.log_std_min = log_std_min
         self.log_std_max = log_std_max
 
-        self._actor = MLP(inputs_dim, output_dims * 2, n_layer, n_unit, use_rebatchnorm)
+        self._actor = MLP(inputs_dim, output_dims * 2, n_layer, n_unit, use_batchrenorm)
 
     def forward(self, x):
         return self._actor(x).chunk(2, dim=-1)
 
-    def sample(self, x, compute_log_pi=False):
+    def sample(self, x, compute_log_pi=False, deterministic=True):
         """
         Sample action from policy, return sampled actions and log prob of that action
         In inference time, set the sampled actions to be deterministic by setting
@@ -75,7 +82,7 @@ class Actor(nn.Module):
         """
         mu, log_std = self.forward(x)
 
-        if not self.training:
+        if deterministic:
             return torch.tanh(mu), None
 
         # constrain log_std inside [log_std_min, log_std_max]
@@ -109,13 +116,13 @@ class DoubleQNet(nn.Module):
         n_layer,
         n_unit,
         requires_grad=True,
-        use_rebatchnorm=False,
+        use_batchrenorm=False,
     ):
         super().__init__()
         inputs_dim = state_dim + action_dim
 
-        self.q1 = MLP(inputs_dim, 1, n_layer, n_unit, use_rebatchnorm)
-        self.q2 = MLP(inputs_dim, 1, n_layer, n_unit, use_rebatchnorm)
+        self.q1 = MLP(inputs_dim, 1, n_layer, n_unit, use_batchrenorm)
+        self.q2 = MLP(inputs_dim, 1, n_layer, n_unit, use_batchrenorm)
 
         if not requires_grad:
             for param in self.parameters():
@@ -135,12 +142,12 @@ class Critic(nn.Module):
         action_shape,
         n_layer,
         n_unit,
-        use_rebatchnorm=False,
+        use_batchrenorm=False,
     ):
         super().__init__()
 
         self._online_q = DoubleQNet(
-            obs_shape, action_shape, n_layer, n_unit, use_rebatchnorm=use_rebatchnorm
+            obs_shape, action_shape, n_layer, n_unit, use_batchrenorm=use_batchrenorm
         )
         self._target_q = DoubleQNet(
             obs_shape,
@@ -148,7 +155,7 @@ class Critic(nn.Module):
             n_layer,
             n_unit,
             requires_grad=False,
-            use_rebatchnorm=use_rebatchnorm,
+            use_batchrenorm=use_batchrenorm,
         )
 
         self._target_q.load_state_dict(self._online_q.state_dict())

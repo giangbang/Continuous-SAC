@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from .model import Actor, Critic
+from model import Actor, Critic
 import torch.nn.functional as F
 import numpy as np
 
@@ -35,7 +35,7 @@ class SAC:
         self.critic_tau = critic_tau
         self.reward_scale = reward_scale
 
-        use_rbn = getattr(self, "use_rebatchnorm", False)
+        use_rbn = getattr(self, "use_batchrenorm", False)
 
         self.actor = Actor(
             obs_shape,
@@ -44,7 +44,7 @@ class SAC:
             hidden_dim,
             actor_log_std_min,
             actor_log_std_max,
-            use_rebatchnorm=use_rbn,
+            use_batchrenorm=use_rbn,
         ).to(device)
 
         self.critic = Critic(
@@ -52,7 +52,7 @@ class SAC:
             action_shape,
             num_layers,
             hidden_dim,
-            use_rebatchnorm=use_rbn,
+            use_batchrenorm=use_rbn,
         ).to(device)
 
         self.target_entropy = -np.prod(action_shape)
@@ -91,6 +91,7 @@ class SAC:
         self.actor.eval()
 
     def _update_critic(self, batch):
+        self.critic.train(True)
         # Compute target Q
         with torch.no_grad():
             next_pi, next_log_pi = self.actor.sample(
@@ -118,9 +119,12 @@ class SAC:
 
         self.critic.polyak_update(self.critic_tau)
 
+        self.critic.train(False)
+
         return critic_loss.item()
 
     def _update_actor(self, batch):
+        self.actor.train(True)
         pi, log_pi = self.actor.sample(batch.states, compute_log_pi=True)
 
         q_vals = self.critic.online_q(batch.states, pi)
@@ -165,6 +169,10 @@ class SAC:
 
         return np.mean(critic_losses), np.mean(actor_losses), np.mean(alpha_losses)
 
-    def select_action(self, state):
+    def select_action(self, state, deterministic=False):
+        self.actor.train(False)
+        state = state.to(self.device)
         with torch.no_grad():
-            return self.actor.sample(state)[0].cpu().numpy()
+            return (
+                self.actor.sample(state, deterministic=deterministic)[0].cpu().numpy()
+            )

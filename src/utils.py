@@ -36,11 +36,13 @@ def parse_args():
     parser.add_argument("--upd", default=1, type=float)
     parser.add_argument(
         "--sample_buffer",
-        default="without_replace",
+        default="with_replace",
         choices=["with_replace", "without_replace"],
+        help="Sampling from buffer with (default) or withour replacement."
     )
     # misc
     parser.add_argument("--seed", default=-1, type=int)
+    parser.add_argument("--device", default="auto", type=str, choices=["cuda", "cpu", "auto"])
     # parser.add_argument('--work_dir', default='.', type=str)
     # parser.add_argument('--save_tb', default=False, action='store_true')
     # parser.add_argument('--save_model', default=False, action='store_true')
@@ -83,9 +85,9 @@ def pprint(dict_data):
 
 def get_agent_cls(algo):
     if algo == "sac":
-        from .sac import SAC as agent
+        from sac import SAC as agent
     elif algo == "crossq":
-        from .crossq import CrossQ as agent
+        from crossq import CrossQ as agent
     else:
         raise NotImplementedError()
     return agent

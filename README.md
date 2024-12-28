@@ -7,7 +7,7 @@ This repo is based on several SAC implementations, mainly [Stable-Baselines3](ht
 ## Installation
 After cloning the repo, install requirements by running
 ```
-pip install -e .
+pip install -r requirements.txt
 ```
 or it can be installed with `pip`
 ```

@@ -2,12 +2,12 @@
 since it should not be copied to other projects
 """
 
-from .buffer import ReplayBuffer
+from buffer import ReplayBuffer
 import torch
 import numpy as np
 import gymnasium as gym
-from .utils import parse_args, pprint, seed_everything, get_agent_cls
-from .logger import Logger
+from utils import parse_args, pprint, seed_everything, get_agent_cls
+from logger import Logger
 
 
 def evaluate(env, agent, n_rollout=10):
@@ -18,13 +18,12 @@ def evaluate(env, agent, n_rollout=10):
         agent.eval()
         while not done:
             state = torch.from_numpy(np.array(state, dtype=np.float32))
-            action = agent.select_action(state).reshape(-1)
+            action = agent.select_action(state, deterministic=True).reshape(-1)
 
             next_state, reward, terminated, truncated, _ = env.step(action)
             tot_rw += reward
             state = next_state
             done = terminated or truncated
-    agent.train()
     return tot_rw / n_rollout
 
 
@@ -49,7 +48,11 @@ def main():
     agent_cls = get_agent_cls(args.algo)
     sac_agent = agent_cls(observation_shape[0], action_shape[0], **vars(args))
     buffer = ReplayBuffer(
-        observation_shape, action_shape, args.buffer_size, args.batch_size
+        observation_shape,
+        action_shape,
+        args.buffer_size,
+        args.batch_size,
+        device=args.device,
     )
 
     def get_batch():
@@ -112,7 +115,7 @@ def main():
         if (env_step + 1) % 5000 == 0:
             logger.log_stdout()
         if (env_step + 1) % 100 == 0 and hasattr(sac_agent, "entropy"):
-            logger.add_scalar("train/entropy", sac_agent.entropy, env_step)
+            logger.add_scalar("train/entropy", sac_agent.entropy.item(), env_step)
             logger.add_scalar("train/fps", logger.fps(), env_step)
             logger.add_scalar("train/num_update", num_network_update, env_step)
 
