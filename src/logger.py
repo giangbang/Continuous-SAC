@@ -18,9 +18,10 @@ class Logger:
     """
 
     def __init__(
-        self, run_name=datetime.now().strftime("%Y-%m-%d_%H%M%S"), folder="runs"
+        self, run_name=datetime.now().strftime("%Y-%m-%d_%H%M%S"), folder="runs", algo="sac"
     ):
-        self.writer = SummaryWriter(f"SAC-continuous.{folder}/{run_name}")
+        self.dir_name = f"{algo}.{folder}/{run_name}"
+        self.writer = SummaryWriter(self.dir_name)
         self.name_to_values = dict()
         self.current_env_step = 0
         self.start_time = time.time()
