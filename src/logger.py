@@ -1,10 +1,11 @@
 import sys
 import os
 import torch
-import datetime
+from datetime import datetime
 import numpy as np
 import time
 from collections import deque
+
 try:
     from torch.utils.tensorboard import SummaryWriter
 except ImportError:
@@ -15,7 +16,10 @@ class Logger:
     """
     Logging class, support printing monitoring information to `std_out` and tf.event files
     """
-    def __init__(self, run_name=datetime.now().strftime('%Y-%m-%d_%H%M%S'), folder="runs"):
+
+    def __init__(
+        self, run_name=datetime.now().strftime("%Y-%m-%d_%H%M%S"), folder="runs"
+    ):
         self.writer = SummaryWriter(f"SAC-continuous.{folder}/{run_name}")
         self.name_to_values = dict()
         self.current_env_step = 0
@@ -25,8 +29,10 @@ class Logger:
         """
         Save hyperparameters into tensorboard
         """
-        self.writer.add_text("hyperparameters",
-            "|param|value|\n|-|-|\n%s" % ("\n".join([f"|{key}|{value}|" for key, value in hyperparams.items()])),
+        self.writer.add_text(
+            "hyperparameters",
+            "|param|value|\n|-|-|\n%s"
+            % ("\n".join([f"|{key}|{value}|" for key, value in hyperparams.items()])),
         )
 
     def add_run_command(self):
@@ -41,7 +47,7 @@ class Logger:
         if key not in self.name_to_values:
             self.name_to_values[key] = deque(maxlen=10 if smoothing else 1)
         self.name_to_values[key].extend([val])
-        self.current_env_step = max(current_env_step, step)
+        self.current_env_step = max(self.current_env_step, step)
 
     def close(self):
         self.writer.close()
@@ -53,7 +59,7 @@ class Logger:
         results = {}
         for name, vals in self.name_to_values.items():
             results[name] = np.mean(vals)
-        results["step"] = current_env_step
+        results["step"] = self.current_env_step
         pprint(results)
 
     def __getitem__(self, key):
@@ -71,24 +77,26 @@ class Logger:
         """
         Measuring the fps
         """
-        time_pass = time.time() - self.start_time # in second
+        time_pass = time.time() - self.start_time  # in second
         return int(self.current_env_step / time_pass)
 
+
 def pprint(dict_data):
-    '''Pretty print Hyper-parameters'''
+    """Pretty print Hyper-parameters"""
     hyper_param_space, value_space = 40, 40
-    format_str = "| {:<"+ f"{hyper_param_space}" + "} | {:<"+f"{value_space}"+"}|"
-    hbar = '-'*(hyper_param_space + value_space+6)
+    format_str = "| {:<" + f"{hyper_param_space}" + "} | {:<" + f"{value_space}" + "}|"
+    hbar = "-" * (hyper_param_space + value_space + 6)
 
     print(hbar)
 
     for k, v in dict_data.items():
-        print(format_str.format(truncate_str(str(k), 40), truncate_str(str(v), 40) ) )
+        print(format_str.format(truncate_str(str(k), 40), truncate_str(str(v), 40)))
 
     print(hbar)
 
+
 def truncate_str(input_str, max_length):
-    """ Truncate the string if it exceeds `max_length` """
+    """Truncate the string if it exceeds `max_length`"""
     if len(input_str) > max_length - 3:
-        return input_str[:max_length-3] + "..."
+        return input_str[: max_length - 3] + "..."
     return input_str

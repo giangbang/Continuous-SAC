@@ -12,7 +12,7 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-            'sac_continuous = train:main',
+            'sac_continuous = train:src.main',
         ],
     },
 )
