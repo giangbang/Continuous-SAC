@@ -20,6 +20,7 @@ class Logger:
     def __init__(
         self, run_name=datetime.now().strftime("%Y-%m-%d_%H%M%S"), folder="runs", algo="sac"
     ):
+        self.run_name = run_name
         self.dir_name = f"{algo}.{folder}/{run_name}"
         self.writer = SummaryWriter(self.dir_name)
         self.name_to_values = dict()

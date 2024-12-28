@@ -136,7 +136,7 @@ def main():
     }  # formated as stable baselines
     df = pd.DataFrame(data_dict)
 
-    df.to_csv(f"{logger.dir_name}/{args.algo}.{args.env_name}.progress.csv", index=False)
+    df.to_csv(f"{logger.dir_name}/{args.algo}.{args.env_name}.progress.{logger.run_name}.csv", index=False)
 
 
 if __name__ == "__main__":
