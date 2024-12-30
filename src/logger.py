@@ -5,6 +5,7 @@ from datetime import datetime
 import numpy as np
 import time
 from collections import deque
+import pandas as pd
 
 try:
     from torch.utils.tensorboard import SummaryWriter
@@ -30,6 +31,9 @@ class Logger:
         self.name_to_values = dict()
         self.current_env_step = 0
         self.start_time = time.time()
+        self.last2file = -float("inf")
+        self._data = dict()
+        self.save_every = 10 * 60
 
     def add_hyperparams(self, hyperparams: dict):
         """
@@ -47,6 +51,8 @@ class Logger:
         """
         cmd = " ".join(sys.argv)
         self.writer.add_text("terminal", cmd)
+        with open(os.path.join(self.dir_name, "cmd.txt"), "w") as file:
+            file.write(cmd)
 
     def add_scalar(self, key, val, step, smoothing=True):
         self.writer.add_scalar(key, val, step)
@@ -54,6 +60,41 @@ class Logger:
             self.name_to_values[key] = deque(maxlen=5 if smoothing else 1)
         self.name_to_values[key].extend([val])
         self.current_env_step = max(self.current_env_step, step)
+        step = self.current_env_step
+
+        if (
+            len(getattr(self._data, "global_step", [])) > 0
+            and self._data["global_step"][-1] == step
+        ):
+            data = getattr(self._data, key, [])
+            if data:
+                data[-1] = val
+            else:
+                self._data[key] = [val]
+        else:
+            self._data[key] = getattr(self._data, key, []) + [val]
+            self._data["global_step"] = getattr(self._data, "global_step", []) + [step]
+            for k, v in self._data.items():
+                if k != key and k != "global_step":
+                    v.append(None)
+
+        if time.time() - self.last2file > self.save_every:
+            self.save2txt()
+            self.last2file = time.time()
+
+    def to_df(self):
+        max_len = len(self._data["global_step"])
+        for k, v in self._data.items():
+            if k != "global_step" and len(v) < max_len:
+                self._data[k] = [None] * (max_len - len(v)) + v
+        df = pd.DataFrame(self._data)
+        df.set_index("global_step", inplace=True)
+        return df
+
+    def save2txt(self, file_name: str = None):
+        if file_name is None:
+            file_name = os.path.join(self.dir_name, "progress.csv")
+        self.to_df().to_csv(file_name)
 
     def close(self):
         self.writer.close()
