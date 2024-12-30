@@ -68,8 +68,12 @@ class BatchRenormalization(Module):
             d = ((mean - self.ra_mean) / ra_std).detach()
             d = torch.clamp(d, -d_max, d_max)
 
-            self.ra_mean = self.momentum * self.ra_mean + (1 - self.momentum) * mean
-            self.ra_var = self.momentum * self.ra_var + (1 - self.momentum) * var
+            self.ra_mean = (
+                self.momentum * self.ra_mean + (1 - self.momentum) * mean.detach()
+            )
+            self.ra_var = (
+                self.momentum * self.ra_var + (1 - self.momentum) * var.detach()
+            )
             self.steps += 1
 
             x = ((x - mean) * r) / std + d

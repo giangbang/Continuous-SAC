@@ -134,4 +134,4 @@ dmypy.json
 /output
 *.npy
 *.pickle
-*.runs
+*runs

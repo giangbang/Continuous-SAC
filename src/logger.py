@@ -18,10 +18,14 @@ class Logger:
     """
 
     def __init__(
-        self, run_name=datetime.now().strftime("%Y-%m-%d_%H%M%S"), folder="runs", algo="sac"
+        self,
+        run_name=datetime.now().strftime("%Y-%m-%d_%H%M%S"),
+        folder="runs",
+        algo="sac",
+        env="Env",
     ):
         self.run_name = run_name
-        self.dir_name = f"{algo}.{folder}/{run_name}"
+        self.dir_name = f"{folder}/{env}/{algo}/{run_name}"
         self.writer = SummaryWriter(self.dir_name)
         self.name_to_values = dict()
         self.current_env_step = 0
@@ -47,7 +51,7 @@ class Logger:
     def add_scalar(self, key, val, step, smoothing=True):
         self.writer.add_scalar(key, val, step)
         if key not in self.name_to_values:
-            self.name_to_values[key] = deque(maxlen=10 if smoothing else 1)
+            self.name_to_values[key] = deque(maxlen=5 if smoothing else 1)
         self.name_to_values[key].extend([val])
         self.current_env_step = max(self.current_env_step, step)
 

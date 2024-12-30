@@ -1,6 +1,6 @@
 #!/bin/bash
 
-envs=("Walker2d-v3" "Ant-v2" "Humanoid-v2" "HalfCheetah-v4" "Hopper-v3" "LunarLanderContinuous-v2")
+envs=("Walker2d-v5" "Ant-v5" "Humanoid-v5" "HalfCheetah-v5" "Hopper-v5" "LunarLanderContinuous-v3")
 algo="crossq"
 
 for env in "${envs[@]}"; do

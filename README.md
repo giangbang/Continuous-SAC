@@ -40,7 +40,7 @@ Most of the experiments used the same hyper-parameters shown in the table. Set `
 | `batch_size`                     | 256     |`actor_log_std_max`              | 2 |
 | `hidden_dim`                     | 256     |`num_layers`                     | 3  |
 | `upd`                 	       | 1       |`discount`                       | 0.99   |
-| `algo`                           | `(sac|crossq)`|`init_temperature`               | 0.2 |
+| `algo`                           | (`sac`\|`crossq`)|`init_temperature`               | 0.2 |
 | `eval_interval`                  | 5000    |`alpha_lr`                       | 0.0003 |
 | `num_eval_episodes`              | 10      |`seed`                           | -1  |
 
@@ -48,9 +48,16 @@ Most of the experiments used the same hyper-parameters shown in the table. Set `
 
 ![avatar](/assets/sac.png)  
 ## Comments
-Here are some critical minor implementation details but are crucial to achieve the desired performance
+Here are some critical minor implementation details but are crucial to achieve the desired performance; 
+
+For SAC:
 - Handle done separately by truncation and termination. SAC performs much worse in some environment when we do not correctly implement this (about 2k rewards in difference in `Half-Cheetah`).
 - Using ReLU activation function slightly increases the performance, compared to using Tanh. I suspect that the three layer Tanh Activation network are not powerful enough to learn the value function of tasks with high reward range like Mujoco.
 - Using `eps=1e-5` in Adam Optimizer does not provide any significant boost as suggested in `stable-baselines3`.
 - Initial temperature of `alpha` (entropy coefficient) can largely impact the final performance (than one might expect). In `Half-Cheetah`, `alpha` starting with the values of 0.2 and 1 can yield a gap ~ 1-2k in final performance.
 - Changing `actor_log_std_min` from -20 to -10 can sometimes reduce the performance, but this might not be consistent through out seeds
+
+For CrossQ;
+- Batch Renorm is the key factor for stable training without a target network and is the most tricky part. The running mean/variance of batch renorm should __only__ be recorded when the networks are _trained_. For example, critic should be in _eval_ mode when optimizing the actor.
+Enabling Batch renorm in actor does yield good results.
+ <!-- Failing to do this can result in divergent performances. -->

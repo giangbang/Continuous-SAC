@@ -28,7 +28,7 @@ class MLP(nn.Module):
         net = [nn.Linear(inputs_dim, n_unit), nn.ReLU()]
         if use_batchrenorm:
             from renorm import BatchRenormalization
-
+            print("Using Batch renorm")
             net.append(BatchRenormalization(n_unit))
 
         for _ in range(n_layer - 2):
