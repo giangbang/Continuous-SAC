@@ -28,7 +28,7 @@ class ReplayBuffer(object):
         self.next_obses = np.empty((capacity, *obs_shape), dtype=obs_dtype)
         self.actions = np.empty((capacity, *action_shape), dtype=np.float32)
         self.rewards = np.empty((capacity, 1), dtype=np.float32)
-        self.dones = np.empty((capacity, 1), dtype=np.float32)
+        self.dones = np.empty((capacity, 1), dtype=bool)
 
         self.idx = 0
         self.last_save = 0
@@ -57,7 +57,7 @@ class ReplayBuffer(object):
         actions = torch.as_tensor(self.actions[idxs], device=self.device)
         rewards = torch.as_tensor(self.rewards[idxs], device=self.device)
         next_obses = torch.as_tensor(self.next_obses[idxs], device=self.device).float()
-        dones = torch.as_tensor(self.dones[idxs], device=self.device)
+        dones = torch.as_tensor(self.dones[idxs], device=self.device).float()
 
         return Transition(obses, actions, rewards, next_obses, dones)
 
