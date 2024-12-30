@@ -63,23 +63,23 @@ class Logger:
         step = self.current_env_step
 
         if (
-            len(getattr(self._data, "global_step", [])) > 0
+            len(self._data.get("global_step", [])) > 0
             and self._data["global_step"][-1] == step
         ):
-            data = getattr(self._data, key, [])
+            data = self._data.get(key, [])
             if data:
                 data[-1] = val
             else:
                 self._data[key] = [val]
         else:
-            self._data[key] = getattr(self._data, key, []) + [val]
-            self._data["global_step"] = getattr(self._data, "global_step", []) + [step]
+            self._data[key] = self._data.get(key, []) + [val]
+            self._data["global_step"] = self._data.get("global_step", []) + [step]
             for k, v in self._data.items():
                 if k != key and k != "global_step":
                     v.append(None)
 
         if time.time() - self.last2file > self.save_every:
-            self.save2txt()
+            self.save2csv()
             self.last2file = time.time()
 
     def to_df(self):
@@ -91,7 +91,7 @@ class Logger:
         df.set_index("global_step", inplace=True)
         return df
 
-    def save2txt(self, file_name: str = None):
+    def save2csv(self, file_name: str = None):
         if file_name is None:
             file_name = os.path.join(self.dir_name, "progress.csv")
         self.to_df().to_csv(file_name)
