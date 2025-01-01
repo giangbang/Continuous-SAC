@@ -73,5 +73,5 @@ if __name__ == "__main__":
         ncol=len(plt_colors),
         frameon=False,
     )
-
+    plt.tight_layout()
     plt.savefig("assets/plot.png")
