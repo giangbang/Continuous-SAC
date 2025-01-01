@@ -26,6 +26,7 @@ It can also be run from terminal by the following command from the entry point, 
 ```
 sac_continuous --env_name HalfCheetah-v4 --total_env_step 1_000_000
 ```
+add `--algo crossq` to run with CrossQ.
 
 ## Results
 
@@ -46,8 +47,7 @@ Most of the experiments used the same hyper-parameters shown in the table. Set `
 
 
 SAC and CrossQ results are shown below
-![avatar](/assets/sac.png)  
-![avatar](/assets/crossq.png)  
+![avatar](/assets/plt.png)  
 ## Comments
 Here are some critical minor implementation details but are crucial to achieve the desired performance; 
 
@@ -61,4 +61,3 @@ For SAC:
 For CrossQ;
 - Batch Renorm is the key factor for stable training without a target network and is the most tricky part. The running mean/variance of batch renorm should __only__ be recorded when the networks are _trained_. For example, critic should be in _eval_ mode when optimizing the actor.
 Enabling Batch renorm in actor does not yield good results in my experiments.
- <!-- Failing to do this can result in divergent performances. -->
