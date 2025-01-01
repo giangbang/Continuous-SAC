@@ -59,5 +59,9 @@ For SAC:
 - Changing `actor_log_std_min` from -20 to -10 can sometimes reduce the performance, but this might not be consistent through out seeds
 
 For CrossQ;
-- Batch Renorm is the key factor for stable training without a target network and is the most tricky part. The running mean/variance of batch renorm should __only__ be recorded when the networks are _trained_. For example, critic should be in _eval_ mode when optimizing the actor.
+- Batch Renorm is the key factor for stable training without a target network and is the most tricky part. The running mean/variance of batch renorm should __only__ be recorded when the networks are _trained_ and the batch contains both current and next states. For example, critic should be in _eval_ mode when optimizing the actor.
 Enabling Batch renorm in actor does not yield good results in my experiments.
+- CrossQ recommend increases network width, but I keep them the same as SAC.
+
+## Computational Resources
+All experiments run in this [Kaggle notebook](https://www.kaggle.com/code/banggiangle/sac-continuous).
