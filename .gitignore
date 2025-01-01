@@ -135,3 +135,4 @@ dmypy.json
 *.npy
 *.pickle
 *runs
+*tmp

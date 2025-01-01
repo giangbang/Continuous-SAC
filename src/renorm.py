@@ -53,7 +53,7 @@ class BatchRenormalization(Module):
         device = self.gamma.device
         self.ra_mean = self.ra_mean.to(device)
         self.ra_var = self.ra_var.to(device)
-        if self.training:
+        if self.training and torch.is_grad_enabled():
             var, mean = torch.var_mean(x, dim=0, keepdim=True)
 
             # r_max = val_schel(self.init_r_max, self.max_r_max, 5000, 40000, self.steps)
@@ -79,6 +79,8 @@ class BatchRenormalization(Module):
             x = ((x - mean) * r) / std + d
             x = self.gamma * x + self.beta
         else:
-            x = (x - self.ra_mean.detach()) / torch.sqrt(self.ra_var.detach())
+            x = (x - self.ra_mean.detach()) / torch.sqrt(
+                self.ra_var.detach() + self.eps
+            )
             x = self.gamma * x + self.beta
         return x
