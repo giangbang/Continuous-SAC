@@ -18,8 +18,8 @@ class CrossQ(SAC):
             next_action, next_log_pi = self.actor.sample(
                 batch.next_states, compute_log_pi=True
             )
-            all_obses = torch.concatenate([batch.states, batch.next_states], dim=0)
-            all_actions = torch.concatenate([batch.actions, next_action], dim=0)
+            all_obses = torch.cat([batch.states, batch.next_states], dim=0)
+            all_actions = torch.cat([batch.actions, next_action], dim=0)
 
         all_Q1, all_Q2 = self.critic.online_q(all_obses, all_actions)
         Q1, target_Q1 = all_Q1.chunk(2, dim=0)

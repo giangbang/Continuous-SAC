@@ -44,7 +44,7 @@ class SAC:
             hidden_dim,
             actor_log_std_min,
             actor_log_std_max,
-            use_batchrenorm=use_rbn,
+            use_batchrenorm=False,
         ).to(device)
 
         self.critic = Critic(
@@ -138,6 +138,8 @@ class SAC:
         self.actor_optimizer.zero_grad()
         actor_loss.backward()
         self.actor_optimizer.step()
+
+        self.actor.train(False)
 
         return actor_loss.item()
 

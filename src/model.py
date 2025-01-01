@@ -28,7 +28,7 @@ class MLP(nn.Module):
         net = [nn.Linear(inputs_dim, n_unit), nn.ReLU()]
         if use_batchrenorm:
             from renorm import BatchRenormalization
-
+            print("Using Batch renorm")
             net.append(BatchRenormalization(n_unit))
 
         for _ in range(n_layer - 2):
@@ -70,7 +70,7 @@ class Actor(nn.Module):
     def forward(self, x):
         return self._actor(x).chunk(2, dim=-1)
 
-    def sample(self, x, compute_log_pi=False, deterministic=True):
+    def sample(self, x, compute_log_pi=False, deterministic=False):
         """
         Sample action from policy, return sampled actions and log prob of that action
         In inference time, set the sampled actions to be deterministic by setting

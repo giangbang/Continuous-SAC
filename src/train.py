@@ -15,10 +15,9 @@ def evaluate(env, agent, n_rollout=10):
     for _ in range(n_rollout):
         state, _ = env.reset()
         done = False
-        agent.eval()
         while not done:
             state = torch.from_numpy(np.array(state, dtype=np.float32))
-            action = agent.select_action(state, deterministic=True).reshape(-1)
+            action = agent.select_action(state, deterministic=False).reshape(-1)
 
             next_state, reward, terminated, truncated, _ = env.step(action)
             tot_rw += reward
@@ -29,7 +28,7 @@ def evaluate(env, agent, n_rollout=10):
 
 def main():
     args = parse_args()
-    logger = Logger()
+    logger = Logger(algo=args.algo, env=args.env_name)
     logger.add_run_command()
 
     if args.seed > 0:
@@ -126,7 +125,7 @@ def main():
     x, y = np.linspace(0, args.total_env_step, len(his)), his
     plt.plot(x, y)
     plt.title(args.env_name)
-    plt.savefig("res.png")
+    plt.savefig(f"{logger.dir_name}/{args.algo}.{args.env_name}.plot.png")
 
     import pandas as pd
 
@@ -136,7 +135,7 @@ def main():
     }  # formated as stable baselines
     df = pd.DataFrame(data_dict)
 
-    df.to_csv("sac_continuous_progress.csv", index=False)
+    df.to_csv(f"{logger.dir_name}/{args.algo}.{args.env_name}.progress.{logger.run_name}.csv", index=False)
 
 
 if __name__ == "__main__":
