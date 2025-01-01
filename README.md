@@ -47,7 +47,7 @@ Most of the experiments used the same hyper-parameters shown in the table. Set `
 
 
 SAC and CrossQ results are shown below
-![avatar](/assets/plt.png)  
+![avatar](/assets/plot.png)  
 ## Comments
 Here are some critical minor implementation details but are crucial to achieve the desired performance; 
 
